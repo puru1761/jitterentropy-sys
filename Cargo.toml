@@ -1,0 +1,13 @@
+[package]
+name = "jitterentropy-sys"
+version = "0.1.0"
+edition = "2021"
+license = "BSD-3-Clause"
+description = "Official low-level rust bindings for libjitterentropy"
+homepage = "https://github.com/puru1761/jitterentropy-sys"
+repository = "https://github.com/puru1761/jitterentropy-sys"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
