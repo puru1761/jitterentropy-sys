@@ -17,6 +17,13 @@ all it's included sub-modules recursively.
 git clone https://github.com/puru1761/jitterentropy-sys.git --recurse-submodules
 ```
 
+Also install the dependencies as required to build `libjitterentropy`.
+On Fedora, I find these to be:
+
+```
+sudo dnf install llvm llvm-devel clang
+```
+
 ## Author
 
 * Purushottam A. Kulkarni <<puruk@protonmail.com>>
