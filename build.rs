@@ -1,8 +1,7 @@
 /*
  * $Id$
  *
- * Copyright (c) 2021, Purushottam A. Kulkarni.
- * All rights reserved.
+ * Copyright 2021 Purushottam A. Kulkarni. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,11 +31,38 @@
  *
  */
 
-#![allow(non_upper_case_globals)]
-#![allow(non_camel_case_types)]
-#![allow(non_snake_case)]
-#![allow(deref_nullptr)]
-#![allow(clippy::redundant_static_lifetimes)]
-#![allow(rustdoc::broken_intra_doc_links)]
-#![allow(improper_ctypes)]
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+use std::{env, fs, path::PathBuf, process::Command};
+
+const LIB: &str = "jitterentropy";
+
+fn main() {
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let build_path = out_path.join("jitterentropy-library");
+    let wrapper_path = build_path.join("wrapper.h");
+
+    Command::new("/bin/cp")
+        .args(&["-r", "jitterentropy-library", build_path.to_str().unwrap()])
+        .status()
+        .expect("Failed to copy dir");
+
+    make_cmd::make()
+        .args(&["-C", build_path.to_str().unwrap()])
+        .status()
+        .expect("Failed to make");
+
+    fs::copy("wrapper.h", wrapper_path.clone()).expect("Failed to copy wrapper.h");
+
+    println!("cargo:rustc-link-search=native={}", build_path.display());
+    println!("cargo:rustc-link-lib={}", LIB);
+    println!("cargo:rerun-if-changed=wrapper.h");
+
+    let bindings = bindgen::Builder::default()
+        .header(format!("{}", wrapper_path.display()))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .generate()
+        .unwrap_or_else(|_| panic!("Unable to generate bindings for lib{}", LIB));
+
+    bindings
+        .write_to_file(out_path.join("bindings.rs"))
+        .expect("Failed to write libjitterentropy bindings");
+}
